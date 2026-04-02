@@ -4,7 +4,7 @@ import '../../../model/songs/song.dart';
 import 'song_repository.dart';
 
 class SongRepositoryMock implements SongRepository {
-  final List<Song> _songs = [  ];
+  final List<Song> _songs = [];
 
   @override
   Future<List<Song>> fetchSongs() async {
@@ -21,5 +21,11 @@ class SongRepositoryMock implements SongRepository {
         orElse: () => throw Exception("No song with id $id in the database"),
       );
     });
+  }
+
+  @override
+  Future<void> likeSong(String id, int currentLikes) {
+    // TODO: implement likeSong
+    throw UnimplementedError();
   }
 }

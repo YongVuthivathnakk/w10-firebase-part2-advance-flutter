@@ -7,9 +7,11 @@ class LibraryItemTile extends StatelessWidget {
     required this.data,
     required this.isPlaying,
     required this.onTap,
+    required this.onLike,
   });
 
   final LibraryItemData data;
+  final VoidCallback onLike;
   final bool isPlaying;
   final VoidCallback onTap;
 
@@ -32,6 +34,10 @@ class LibraryItemTile extends StatelessWidget {
               Text(data.artist.name),
               SizedBox(width: 20),
               Text(data.artist.genre),
+              SizedBox(width: 20),
+              Text(
+                "${data.song.likes.toString()} ${data.song.likes > 1 ? "likes" : "like"}",
+              ),
             ],
           ),
           leading: CircleAvatar(
@@ -40,7 +46,7 @@ class LibraryItemTile extends StatelessWidget {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              IconButton(onPressed: () {}, icon: Icon(Icons.heart_broken)),
+              IconButton(onPressed: onLike, icon: Icon(Icons.heart_broken)),
               Text(
                 isPlaying ? "Playing" : "",
                 style: TextStyle(color: Colors.amber),

@@ -22,7 +22,10 @@ class SongRepositoryFirebase extends SongRepository {
 
       List<Song> result = [];
       for (final entry in songJson.entries) {
-        result.add(SongDto.fromJson(entry.key, entry.value));
+        // Ensure entry.value is a Map before processing
+        if (entry.value is Map<String, dynamic>) {
+          result.add(SongDto.fromJson(entry.key, entry.value));
+        }
       }
       return result;
     } else {
@@ -34,5 +37,26 @@ class SongRepositoryFirebase extends SongRepository {
   @override
   Future<Song?> fetchSongById(String id) async {
     return null;
+  }
+
+  @override
+  Future<void> likeSong(String id, int currentLikes) async {
+    // Current song uri with song id
+
+    final Uri url = Uri.https(
+      'g1-project-13926-default-rtdb.asia-southeast1.firebasedatabase.app',
+      '/songs/$id/likes.json',
+    );
+
+    final response = await http.put(
+      url,
+      headers: {'Content-Type': 'application/json'},
+
+      body: json.encode(currentLikes + 1),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to like song');
+    }
   }
 }
