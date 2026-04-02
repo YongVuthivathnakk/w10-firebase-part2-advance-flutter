@@ -6,12 +6,19 @@ import '../view_model/library_item_data.dart';
 import 'library_item_tile.dart';
 import '../view_model/library_view_model.dart';
 
-class LibraryContent extends StatelessWidget {
+class LibraryContent extends StatefulWidget {
   const LibraryContent({super.key});
 
   @override
+  State<LibraryContent> createState() => _LibraryContentState();
+}
+
+class _LibraryContentState extends State<LibraryContent> {
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
+
+  @override
   Widget build(BuildContext context) {
-    // 1- Read the globbal song repository
     LibraryViewModel mv = context.watch<LibraryViewModel>();
 
     AsyncValue<List<LibraryItemData>> asyncValue = mv.data;
@@ -28,19 +35,25 @@ class LibraryContent extends StatelessWidget {
             style: TextStyle(color: Colors.red),
           ),
         );
-
+        break;
       case AsyncValueState.success:
         List<LibraryItemData> data = asyncValue.data!;
-        content = ListView.builder(
-          itemCount: data.length,
-          itemBuilder: (context, index) => LibraryItemTile(
-            data: data[index],
-            isPlaying: mv.isSongPlaying(data[index].song),
-            onTap: () {
-              mv.start(data[index].song);
-            },
-            onLike: () =>
-                mv.likeSong(data[index].song.id, data[index].song.likes),
+        content = RefreshIndicator(
+          key: _refreshIndicatorKey,
+          onRefresh: () async {
+            await mv.fetchSong(forceFetch: true);
+          },
+          child: ListView.builder(
+            itemCount: data.length,
+            itemBuilder: (context, index) => LibraryItemTile(
+              data: data[index],
+              isPlaying: mv.isSongPlaying(data[index].song),
+              onTap: () {
+                mv.start(data[index].song);
+              },
+              onLike: () =>
+                  mv.likeSong(data[index].song.id, data[index].song.likes),
+            ),
           ),
         );
     }
@@ -51,9 +64,21 @@ class LibraryContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(height: 16),
-          Text("Library", style: AppTextStyles.heading),
+          // Use the button to trigger instead because cannot pull up to down to refresh
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("Library", style: AppTextStyles.heading),
+              SizedBox(width: 12),
+              IconButton(
+                icon: Icon(Icons.refresh),
+                onPressed: () {
+                  _refreshIndicatorKey.currentState?.show();
+                },
+              ),
+            ],
+          ),
           SizedBox(height: 50),
-
           Expanded(child: content),
         ],
       ),

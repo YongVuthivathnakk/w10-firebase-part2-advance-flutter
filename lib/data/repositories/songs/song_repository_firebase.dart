@@ -12,9 +12,14 @@ class SongRepositoryFirebase extends SongRepository {
     '/songs.json',
   );
 
+  List<Song>? _cachedSongs;
+
   @override
-  Future<List<Song>> fetchSongs() async {
+  Future<List<Song>> fetchSongs({bool forceFetch = false}) async {
     final http.Response response = await http.get(songsUri);
+    if (!forceFetch && _cachedSongs != null) {
+      return _cachedSongs!;
+    }
 
     if (response.statusCode == 200) {
       // 1 - Send the retrieved list of songs
@@ -27,6 +32,9 @@ class SongRepositoryFirebase extends SongRepository {
           result.add(SongDto.fromJson(entry.key, entry.value));
         }
       }
+
+      _cachedSongs = result;
+
       return result;
     } else {
       // 2- Throw expcetion if any issue
